@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+<head>
+  <title>LoRa Mesh Graph</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #0b0b0b;
+      color: #00ff88;
+      font-family: "Fira Code", monospace;
+      font-size: 12px;
+    }
+
+    h2 {
+      margin: 10px;
+      color: white;
+    }
+
+    #wrap {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* LEFT: NODE GRID */
+    #grid {
+		display: flex;
+  		flex-wrap: wrap;
+  		gap: 10px;
+  		width: 100%;
+  		padding: 10px;
+  		align-content: flex-start;
+    }
+
+    .card {
+	order:4;
+	flex-grow:3;
+      border: 1px solid #222;
+      border-bottom: 1px solid #00ff88;
+      margin-bottom: 10px;
+      padding: 6px;
+      background: #111;
+	  transition: 0.2s;
+	  min-width: 20vw;
+	  max-width:620px;
+    }
+	.card:hover {
+  	  transform: translateY(-2px);
+  	  border-bottom-color: #ffffff;
+	}
+
+    .name {
+      color: white;
+      font-weight: bold;
+    }
+
+    .id {
+      color: #00ccff;
+      font-size: 11px;
+    }
+
+    .meta {
+      color: #eee;
+      font-size: 11px;
+    }
+
+    /* RIGHT: GRAPH */
+    #graph {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+
+#dbg {
+	min-width:250px;
+	min-height:100px;
+	border:1px solid #F29C0D;
+	border-radius:2px;
+	background-color: #0B0B0B;
+	color:#efefef;
+	position:fixed;
+	top:8px;
+	left:8px;
+}
+
+  </style>
+</head>
+
+<body>
+<div id="db"></div>
+<h2>📡 LoRa Mesh Graph View</h2>
+
+<div id="wrap">
+
+  <div id="grid"></div>
+
+</div>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script>
+
+const dbg = (w)=>{
+	w  = new Date().toJSON().slice(11, 19);
+	console.log("new dbg message");
+	document.getElementById("dbg").innerHTML = w;
+}
+
+
+const socket = io("http://10.0.0.200:5000", {
+    transports: ["polling"]
+});
+
+let nodes = [];
+let messages = [];
+
+socket.on("update", (data) => {
+	if(data.alrt){
+		alert(data.alrt);
+		return;
+	}	
+    nodes = data.nodes;
+    messages = data.messages;
+    render();
+});
+
+
+function formatDate(ts) {
+    const d = new Date(ts);
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+
+    const hour = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+
+    return `${day}.${month}.${year} ${hour}:${min}`;
+}
+
+function render() {
+	console.log("calling render()");
+    const grid = document.getElementById("grid");
+
+    grid.innerHTML = nodes.map(n => {
+        const id = n[0];
+        const name = n[1] || id;
+        const last = n[4];
+
+        const nodeMsgs = messages
+            .filter(m => m[1] === id)
+            .slice(-10);
+        return `
+<div class="card">
+    <div class="name">${name}</div>
+    <div class="id">${id}</div>
+    <div class="meta">last: ${formatDate(`${last}`)} </div>
+
+    <div class="talk">
+        ${nodeMsgs.map(m => `
+            <div class="msg">
+				<span class="meta">${formatDate(m[0])}</span> 
+                <span class="type">${m[3]}</span>
+            </div>
+        `).join("")}
+    </div>
+</div>
+        `;
+    }).join("");
+}
+
+</script>
+
+
+
+</body>
+</html>
