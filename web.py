@@ -48,11 +48,16 @@ def on_connect():
 
 @socketio.on("update")
 def on_update(node):
-  print("🟢 updateing...")
-  socketio.emit("update", {
-    "nodes": db.get_nodes(),
-    "messages": db.get_messages(),
-  })
+    ring = node.get("alrt", "")
+    print("🟢 updateing...",ring)
+    try:
+        socketio.emit("update", {
+            "nodes": db.get_nodes(),
+            "messages": db.get_messages(),
+            "alrt": ring
+        })
+    except Exception as e:
+        print("something went wrong here in def on_update web.py")
   #print(node)
 	
 

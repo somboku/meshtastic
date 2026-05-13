@@ -120,13 +120,15 @@ let nodes = [];
 let messages = [];
 
 socket.on("update", (data) => {
-	if(data.alrt){
-		alert(data.alrt);
-		return;
-	}	
-    nodes = data.nodes;
-    messages = data.messages;
-    render();
+   console.log(data);
+   //if(data.alrt !== ""){
+   //	alert(data.alrt);
+	//	return;
+  // }	
+   nodes = data.nodes;
+   messages = data.messages;
+   console.table(messages)
+   render();
 });
 
 
@@ -146,15 +148,15 @@ function formatDate(ts) {
 function render() {
 	console.log("calling render()");
     const grid = document.getElementById("grid");
-
+        
     grid.innerHTML = nodes.map(n => {
         const id = n[0];
         const name = n[1] || id;
         const last = n[4];
-
         const nodeMsgs = messages
-            .filter(m => m[1] === id)
+            .filter(m => m.node_id === id)
             .slice(-10);
+
         return `
 <div class="card">
     <div class="name">${name}</div>
@@ -164,8 +166,8 @@ function render() {
     <div class="talk">
         ${nodeMsgs.map(m => `
             <div class="msg">
-				<span class="meta">${formatDate(m[0])}</span> 
-                <span class="type">${m[3]}</span>
+				<span class="meta">${formatDate(m.ts)}</span> 
+                <span class="type">${m.text}</span>
             </div>
         `).join("")}
     </div>

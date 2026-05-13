@@ -25,7 +25,7 @@ def notify(data):
 try:
     sio.connect("http://127.0.0.1:5000")
     print("🌐 Connected to web server")
-    notify("Bridge connected")
+    #notify("Bridge connected")
 except Exception as e:
     print("❌ Could not connect to web server:", e)
 
@@ -64,7 +64,7 @@ def import_nodes():
             hw,
             last_seen
         )
-        print(f"🧩 {node_id} -> {long_name} [{hw}] {last_seen}")
+        print(f"🧩 {node_id} -> {long_name} [{hw}]")
 
 
 import sqlite3
@@ -96,10 +96,10 @@ def insert_packet(packet):
             INSERT INTO packets (node_id,json) 
             values (?,?)""",
             (node_id,
-            json.dumps(packet, indent=2, default=str)
+            json.dumps(packet, default=str)
             ))
         conn.commit()
-        print("insert whole packet commited")       
+        #print("insert whole packet commited")       
     except Exception as e:
         print("DB ERROR:",e)
         traceback.print_exc()
@@ -145,6 +145,11 @@ def on_receive(packet, interface):
         else:
             text = "position update"
 # -----------------------------------------------
+    elif msg_type == "NODEINFO_APP":
+
+        user = decoded.get("user", {})
+        text = f'{user.get("longName")} on {user.get("hwModel")} as a {user.get("role")}';
+
     else:
         text =  json.dumps(decoded, default=str)
 
@@ -188,19 +193,21 @@ def on_receive(packet, interface):
     db.insert_message(
         str(node_id),
         str(msg_type),
-        str(text)
+        str(text),
+        str(decoded),
+        str(packet)
     )
 
-    print(f"📨 {node_name} [{msg_type}] {text}, {last_seen}")
+    print(f"📨 {node_name} [{msg_type}] {text}")
     print("pushing to web")
     try:
         sio.emit("update", {
             "nodes": db.get_nodes(),
             "messages": db.get_messages(),
-            "alrt": "bridge started...."
+            #"alrt": "bridge started...."
         })
     except Exception as e:
-        print("⚠️ websocket emit failed:", e)
+        print("⚠️ websocket emit failed in bridge.py:", e)
 
 def on_nodeinfo(packet,interface):
 	_l("on_nodeinfo called")

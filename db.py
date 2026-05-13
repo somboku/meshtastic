@@ -1,4 +1,5 @@
 import sqlite3
+import ast
 import json
 DB = "mesh.db"
 
@@ -56,7 +57,7 @@ def update_full_node(node_id, name, hw, last_seen):
     conn.commit()
     conn.close()
 
-def insert_message(node_id, msg_type, text):
+def insert_message(node_id, msg_type, text,pac,deco):
     conn = sqlite3.connect(DB)
     c = conn.cursor()
 
@@ -65,13 +66,20 @@ def insert_message(node_id, msg_type, text):
         node_id,
         type,
         text,
-        ts
+        ts,
+        pac,
+        deco
     )
     VALUES (?, ?, ?,
-        datetime('now','localtime')
+        datetime('now','localtime'),
+        ?,?
     )
-    """, (node_id, msg_type, text)
-    )
+    """, (node_id, 
+            msg_type, 
+            json.dumps(text,default=str),
+            pac,
+            deco
+        ))
 
     conn.commit()
     conn.close()
@@ -103,7 +111,6 @@ def get_nodes():
     """)
 
     rows = c.fetchall()
-
     conn.close()
 
     return rows
@@ -115,15 +122,49 @@ def update_node(node_id):
     update nodes set (last_seen)
     values (datetime('now','localtime')) where node_id = ?
     """,(node_id))
+    conn.commit()
+    conn.close()
+ 
+def clean_text(text):
+    if not isinstance(text, str):
+        return str(text)
 
+    # fast path: only structured packets
+    if "portnum" in text:
+        obj = None
 
-def get_messages(limit=44400):
+        # try JSON first
+        try:
+            obj = json.loads(text)
+        except Exception:
+            pass
+        if isinstance(obj, str):
+            obj = json.loads(obj)
+        # fallback: python repr
+        if obj is None:
+            try:
+                obj = ast.literal_eval(text)
+            except Exception:
+                return text  # give up safely
+
+        if isinstance(obj, dict):
+            user = obj.get("user", {})
+            name = user.get("longName")
+            hw = user.get("hwModel")
+
+            if name and hw:
+                return f"{name} on a <span style=color:red; >{hw}</span>"
+
+    return text
+
+def get_messages(limit=1134):
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
     c.execute("""
     SELECT
+        id,
         ts,
         node_id,
         type,
@@ -137,22 +178,12 @@ def get_messages(limit=44400):
     dummy = []
     for row in rows:
         (text,ts) = (row["text"],row["ts"])
-        txt=row["text"]
-        if isinstance(text, str) and "portnum" in text:
-            try:
-                obj = json.loads(text)
-            except json.JSONDecodeError:
-                try:
-                    obj = ast.literal_eval(text)
-                except Exception:
-                    obj = None
-            if obj:
-                user = obj.get("user", {})
-                txt = user["longName"]," on a ",user["hwModel"]
+        txt = clean_text(text)        
+
         dummy.append({
+            "node_id": row["node_id"],
             "text": txt,
             "ts": row["ts"],
-            "node_id": row["node_id"]
         })
     return dummy
 
