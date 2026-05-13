@@ -52,9 +52,8 @@ def on_update(node):
   socketio.emit("update", {
     "nodes": db.get_nodes(),
     "messages": db.get_messages(),
-    "alrt": node.alrt
   })
-  print(node)
+  #print(node)
 	
 
 @socketio.on("notify")

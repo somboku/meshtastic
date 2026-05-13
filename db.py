@@ -65,7 +65,7 @@ def insert_message(node_id, msg_type, text):
         node_id,
         type,
         text,
-		ts
+        ts
     )
     VALUES (?, ?, ?,
         datetime('now','localtime')
@@ -77,13 +77,13 @@ def insert_message(node_id, msg_type, text):
     conn.close()
 
 def insertNodeInfo(packet,interface):
-	conn = sqlite3.connect(DB)
-	c = conn.cursor()
-	c.execute("""
-	insert into node_info (full_raw)
-	values (?)
-	""", (json.dumps(packet, default=str))
-	)
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute("""
+    insert into node_info (full_raw)
+    values (?)
+    """, (json.dumps(packet, default=str))
+    )
 
 
 
@@ -108,17 +108,18 @@ def get_nodes():
 
     return rows
 def update_node(node_id):
-	conn = sqlite3.connect(DB)
-	c = conn.cursor()
-
-	c.execute("""
-	update nodes set (last_seen)
-	values (datetime('now','localtime')) where node_id = ?
-	""",(node_id))
-
-
-def get_messages(limit=200):
     conn = sqlite3.connect(DB)
+    c = conn.cursor()
+
+    c.execute("""
+    update nodes set (last_seen)
+    values (datetime('now','localtime')) where node_id = ?
+    """,(node_id))
+
+
+def get_messages(limit=44400):
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
     c.execute("""
@@ -126,12 +127,37 @@ def get_messages(limit=200):
         ts,
         node_id,
         type,
-        substr(`text`,0,30) as text
+        text 
     FROM messages
     ORDER BY ts DESC 
     LIMIT ?
     """, (limit,))
 
     rows = c.fetchall()
-    conn.close()
-    return rows
+    dummy = []
+    for row in rows:
+        (text,ts) = (row["text"],row["ts"])
+        txt=row["text"]
+        if isinstance(text, str) and "portnum" in text:
+            try:
+                obj = json.loads(text)
+            except json.JSONDecodeError:
+                try:
+                    obj = ast.literal_eval(text)
+                except Exception:
+                    obj = None
+            if obj:
+                user = obj.get("user", {})
+                txt = user["longName"]," on a ",user["hwModel"]
+        dummy.append({
+            "text": txt,
+            "ts": row["ts"],
+            "node_id": row["node_id"]
+        })
+    return dummy
+
+
+
+
+
+

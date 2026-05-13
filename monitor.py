@@ -1,6 +1,8 @@
+import ast
+import base64
 import sqlite3
 import re
-import ast
+import json
 from meshtastic.protobuf import mesh_pb2
 
 DB = "mesh.db"
@@ -10,15 +12,6 @@ conn = sqlite3.connect(DB)
 conn.row_factory = sqlite3.Row
 
 c = conn.cursor()
-c.execute("""
-    SELECT *
-    FROM nodes
-    LIMIT 5
-""")
-rows = c.fetchall()
-#for row in rows:
-#    print(dict(row))
-
 #msg = mesh_pb2.User()
 #msg.ParseFromString(data)
 #print(msg)
@@ -35,18 +28,22 @@ c.execute("""
     ON messages.node_id = nodes.node_id
     where messages.text not like '%battery%'
     ORDER BY messages.ts DESC
-    LIMIT 14
+    LIMIT 300
 """)
 rows = c.fetchall()
 
 for row in rows:
     (text,typ,name) = (row["text"],row["type"],row["name"])
-    if re.search(r"portnum",text):
-        obj = ast.literal_eval(text)
+    print(text)
+    if "portnum" in text:
+        obj = json.loads(text)
         print ("portnum found")
-        print(obj["text"])
-        print("-------------------------------------")
 
+        user = obj.get("user")
+        payload = obj.get("payload")
+        text = user["longName"]," on a ",user["hwModel"]
+    if text == "{}":
+        row["text"] = "NA"
 
 
 
