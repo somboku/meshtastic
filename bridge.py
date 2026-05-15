@@ -1,3 +1,7 @@
+# this one is bridge.py collecting data from esp32 via serial
+# May 2026 during perestroika break 
+
+
 import time
 import pprint
 import socketio
@@ -42,6 +46,9 @@ print("📡 Connected to Meshtastic radio")
 def import_nodes():
     print("📚 Importing node database...")
     nodes = interface.nodes
+    if not nodes:
+        return
+
     user = {}
     print(f"🔍 found {len(nodes)} nodes")
     for node_id, node in nodes.items():

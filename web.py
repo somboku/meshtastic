@@ -1,3 +1,6 @@
+# this one is web.py listen on port 5000
+# may 2026
+
 from flask import Flask, jsonify
 from flask_socketio import SocketIO
 import db
