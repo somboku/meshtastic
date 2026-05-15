@@ -157,7 +157,7 @@ def clean_text(text):
 
     return text
 
-def get_messages(limit=1134):
+def get_messages(limit=1144):
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
@@ -185,8 +185,31 @@ def get_messages(limit=1134):
             "text": txt,
             "ts": row["ts"],
         })
+    conn.close()
     return dummy
 
+
+def insert_packet(packet):
+    node_id = packet.get("fromId") or str(packet.get("from"))
+    to_id = packet.get("toId") or str(packet.get("to"))
+    try:
+        conn = sqlite3.connect("mesh.db")
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO packets (node_id,json) 
+            values (?,?)""",
+            (node_id,
+            json.dumps(packet, default=str)
+            ))
+        conn.commit()
+        print("insert whole packet commited")       
+    except Exception as e:
+        print("DB ERROR:",e)
+        traceback.print_exc()
+    finally:
+        if conn:
+            conn.close()
+    return
 
 
 

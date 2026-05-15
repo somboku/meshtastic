@@ -27,6 +27,13 @@ def index():
     return open("ui.html").read()
 
 
+@app.route("/data")
+def data():
+    return {
+        "nodes": db.get_nodes(),
+        "messages": db.get_messages()
+    }
+
 @app.route("/api/nodes")
 def nodes():
     return jsonify(db.get_nodes())

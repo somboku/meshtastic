@@ -47,7 +47,7 @@ for row in rows:
             payload = obj.get("payload")
             msg = mesh_pb2.NodeInfo()
             msg.ParseFromString(payload)
-            print(msg)
+        #    print(msg)
 
             res = f'{user["longName"]} on a {user["hwModel"]} >>>{payload}<<<'
     print(res)

@@ -67,49 +67,10 @@ def import_nodes():
         print(f"🧩 {node_id} -> {long_name} [{hw}]")
 
 
-import sqlite3
 
-def safe_execute(query, params):
-    conn = None
-    try:
-        conn = sqlite3.connect("mesh.db")
-        c = conn.cursor()
-
-        c.execute(query, params)
-        conn.commit()
-
-    except Exception as e:
-        print("DB ERROR:", e)
-        traceback.print_exc()
-
-    finally:
-        if conn:
-            conn.close()
-
-def insert_packet(packet):
-    node_id = packet.get("fromId") or str(packet.get("from"))
-    to_id = packet.get("toId") or str(packet.get("to"))
-    try:
-        conn = sqlite3.connect("mesh.db")
-        c = conn.cursor()
-        c.execute("""
-            INSERT INTO packets (node_id,json) 
-            values (?,?)""",
-            (node_id,
-            json.dumps(packet, default=str)
-            ))
-        conn.commit()
-        #print("insert whole packet commited")       
-    except Exception as e:
-        print("DB ERROR:",e)
-        traceback.print_exc()
-    finally:
-        if conn:
-            conn.close()
-    return
 
 def on_receive(packet, interface):
-    insert_packet(packet)
+    db.insert_packet(packet)
     user = {}
     decoded = packet.get("decoded", {})
     node_id = (
@@ -148,7 +109,7 @@ def on_receive(packet, interface):
     elif msg_type == "NODEINFO_APP":
 
         user = decoded.get("user", {})
-        text = f'{user.get("longName")} on {user.get("hwModel")} as a {user.get("role")}';
+        text = f'{user.get("longName")} on a <span style=color:red;> {user.get("hwModel")}</span> as a {user.get("role")}';
 
     else:
         text =  json.dumps(decoded, default=str)
@@ -194,15 +155,16 @@ def on_receive(packet, interface):
         str(node_id),
         str(msg_type),
         str(text),
-        str(decoded),
-        str(packet)
+        str(packet),
+        str(decoded)
     )
+    now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
-    print(f"📨 {node_name} [{msg_type}] {text}")
+    print(f"{now}📨 {node_name} [{msg_type}] {text}")
     print("pushing to web")
     try:
         sio.emit("update", {
-            "nodes": db.get_nodes(),
+            "nodes":    db.get_nodes(),
             "messages": db.get_messages(),
             #"alrt": "bridge started...."
         })

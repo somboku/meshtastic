@@ -6,7 +6,7 @@ sio = socketio.Client()
 
 def notify(data):
     try:
-        sio.emit("update", {"notify",data})
+        sio.emit("update", {"alrt",data})
     except Exception as e:
         print("⚠️ websocket notify failed:", e)
 try:
