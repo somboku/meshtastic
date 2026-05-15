@@ -6,12 +6,12 @@ import time
 import pprint
 import socketio
 from flask_socketio import SocketIO
-import meshtastic.serial_interface
 from pubsub import pub
 import json
 import db
 from datetime import datetime
-
+import sys
+from meshtastic.serial_interface import SerialInterface
 
 db.init()
 sio = socketio.Client()
@@ -34,10 +34,18 @@ except Exception as e:
     print("❌ Could not connect to web server:", e)
 
 
-#
-# connect to meshtastic device
-#
-interface = meshtastic.serial_interface.SerialInterface()
+
+interface = SerialInterface()
+print("📚 Importing node database...")
+
+print(dir(interface))
+print("==================================================================================")
+print(dir(interface.showNodes))
+print("==================================================================================")
+print(dir(interface.showInfo))
+#interface.sendText("test")
+
+sys.exit()
 
 print("📡 Connected to Meshtastic radio")
 
@@ -45,10 +53,10 @@ print("📡 Connected to Meshtastic radio")
 # import ALL known nodes from meshtastic cache
 def import_nodes():
     print("📚 Importing node database...")
-    nodes = interface.nodes
-    if not nodes:
-        return
+    interface.showNodes()
+    #print(nodes)
 
+    sys.exit()
     user = {}
     print(f"🔍 found {len(nodes)} nodes")
     for node_id, node in nodes.items():
