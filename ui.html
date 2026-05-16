@@ -81,7 +81,9 @@ function render() {
 	console.log("calling render()");
     const grid = document.getElementById("grid");
         
-    grid.innerHTML = nodes.map(n => {
+    grid.innerHTML = nodes
+      .sort((a, b) => new Date(b[4]) - new Date(a[4]))
+      .map(n => {
         const id = n[0];
         const name = n[1] || id;
         const last = n[4];

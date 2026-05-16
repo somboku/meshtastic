@@ -61,7 +61,8 @@ def import_nodes():
                 last_heard
             ).strftime("%Y-%m-%d %H:%M:%S")
         else:
-            last_seen = "now()"
+            last_seen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         if not long_name:
             long_name = str(node_id)
 
@@ -117,6 +118,8 @@ def on_receive(packet, interface):
 
         user = decoded.get("user", {})
         text = f'{user.get("longName")} on a <span style=color:red;> {user.get("hwModel")}</span> as a {user.get("role")}';
+    elif msg_type == "ADMIN_APP":
+        text = "ADMIN_APP nothing to see"
 
     else:
         text =  json.dumps(decoded, default=str)

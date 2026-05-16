@@ -29,6 +29,13 @@ def init():
 
     conn.commit()
     conn.close()
+def easy(sql):
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute(sql)    
+    rows = c.fetchall()
+    conn.close()
+    return rows
 
 def update_full_node(node_id, name, hw, last_seen):
     conn = sqlite3.connect(DB)
@@ -112,8 +119,9 @@ def get_nodes():
 
     rows = c.fetchall()
     conn.close()
-
     return rows
+
+
 def update_node(node_id):
     conn = sqlite3.connect(DB)
     c = conn.cursor()
@@ -157,31 +165,44 @@ def clean_text(text):
 
     return text
 
-def get_messages(limit=1144):
+def get_messages(limit=1144,):
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
     c.execute("""
-    SELECT
-        id,
-        ts,
-        node_id,
-        type,
-        text 
-    FROM messages
-    ORDER BY ts DESC 
-    LIMIT ?
-    """, (limit,))
+        SELECT *
+        FROM (
+            SELECT
+                id,
+                ts,
+                node_id,
+                type,
+                text,
+                ROW_NUMBER() OVER (
+                    PARTITION BY node_id
+                    ORDER BY ts DESC
+                ) AS rn
+            FROM messages
+        )
+        WHERE rn <= 10
+        ORDER BY ts DESC;
+    """)
 
     rows = c.fetchall()
     dummy = []
+    ctr = {}
     for row in rows:
-        (text,ts) = (row["text"],row["ts"])
+        (text,ts,node_id) = (row["text"],row["ts"],row["node_id"])
         txt = clean_text(text)        
+       # if node_id not in ctr:
+       #     ctr[node_id] = {"cn":0}
+       # ctr[node_id]["cn"] += 1
 
+       # if ctr[node_id]["cn"] > 10:
+        #   continue
         dummy.append({
-            "node_id": row["node_id"],
+            "node_id": node_id,
             "text": txt,
             "ts": row["ts"],
         })
