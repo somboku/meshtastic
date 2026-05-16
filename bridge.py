@@ -38,14 +38,6 @@ except Exception as e:
 interface = SerialInterface()
 print("📚 Importing node database...")
 
-print(dir(interface))
-print("==================================================================================")
-print(dir(interface.showNodes))
-print("==================================================================================")
-print(dir(interface.showInfo))
-#interface.sendText("test")
-
-sys.exit()
 
 print("📡 Connected to Meshtastic radio")
 
@@ -53,10 +45,9 @@ print("📡 Connected to Meshtastic radio")
 # import ALL known nodes from meshtastic cache
 def import_nodes():
     print("📚 Importing node database...")
-    interface.showNodes()
+    nodes = interface.nodesByNum
     #print(nodes)
 
-    sys.exit()
     user = {}
     print(f"🔍 found {len(nodes)} nodes")
     for node_id, node in nodes.items():
@@ -69,7 +60,8 @@ def import_nodes():
             last_seen = datetime.fromtimestamp(
                 last_heard
             ).strftime("%Y-%m-%d %H:%M:%S")
-
+        else:
+            last_seen = "now()"
         if not long_name:
             long_name = str(node_id)
 
@@ -176,13 +168,13 @@ def on_receive(packet, interface):
     now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
     print(f"{now}📨 {node_name} [{msg_type}] {text}")
-    print("pushing to web")
     try:
         sio.emit("update", {
             "nodes":    db.get_nodes(),
             "messages": db.get_messages(),
             #"alrt": "bridge started...."
         })
+
     except Exception as e:
         print("⚠️ websocket emit failed in bridge.py:", e)
 
