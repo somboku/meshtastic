@@ -1,0 +1,7 @@
+pip uninstall -y meshtastic meshtastic-flasher protobuf grpcio-tools
+pip install "protobuf<7,>=6.31.0"
+pip install meshtastic==2.7.8
+
+pip install meshtastic-flasher==2.0.2
+pip install grpcio-tools
+

@@ -13,7 +13,6 @@ from datetime import datetime
 import sys
 from meshtastic.serial_interface import SerialInterface
 
-db.init()
 sio = socketio.Client()
 
 def _l(w):
