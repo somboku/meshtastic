@@ -1,7 +1,7 @@
 import sqlite3
 import ast
 import json
-DB = "mesh2.db"
+DB = "00F0.db"
 
 def init():
     conn = sqlite3.connect(DB)

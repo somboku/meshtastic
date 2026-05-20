@@ -13,8 +13,12 @@ from datetime import datetime
 import sys
 from meshtastic.serial_interface import SerialInterface
 
+serial = sys.argv[1] if len(sys.argv) > 1 else None
+if serial is None:
+    print("Usage: bridge.py /dev/ttyUSB1")
+    sys.exit()
+
 sio = socketio.Client()
-serial = "/dev/ttyACM0"
 
 def _l(w):
 	print(w)
