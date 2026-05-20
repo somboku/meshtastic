@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+   <title>LoRa Mesh Graph</title>
+   <link rel="stylesheet" href="static/css.css" >
+</head>
+
+<body>
+<div id="db"><button id="btn" value="refresh">refresh</button></div>
+   <script>
+      async function poll() {
+         const res = await fetch("http://10.0.0.200:5000/data");
+         const data = await res.json();
+         nodes = data.nodes;
+         messages = data.messages;
+         render();
+         console.log("polling");
+      }
+
+//setInterval(poll, 2000);
+document.getElementById("btn").onclick = poll;
+   </script>
+
+<h2>📡 LoRa Mesh Graph View</h2>
+<div id="wrap">
+  <div id="grid"></div>
+</div>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+
+   const dbg = (w)=>{
+	  w  = new Date().toJSON().slice(11, 19);
+	  console.log("new dbg message");
+	  document.getElementById("dbg").innerHTML = w;
+   }
+
+
+const socket = io("http://10.0.0.200:5000", {
+   transports: ["polling"]
+});
+
+   let nodes = [];
+   let messages = [];
+
+   socket.on("update", (data) => {
+   //console.log(data);
+   //if(data.alrt !== ""){
+   //	alert(data.alrt);
+	//	return;
+  // }	
+   nodes = data.nodes;
+   messages = data.messages;
+   render();
+});
+
+
+function formatDate(ts) {
+    const d = new Date(ts);
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+
+    const hour = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+
+    return `${day}.${month}.${year} ${hour}:${min}`;
+}
+
+function formatText(txt){
+   var reg = new RegExp('mg');
+   regex = /^"/
+   if (regex.test(txt)){
+      //console.log(">>>>>>> ",txt);
+      nT = txt.replace(/[\"\{\}]/g,"");
+   }
+   return nT;
+}
+
+function render() {
+	console.log("calling render()");
+    const grid = document.getElementById("grid");
+        
+    grid.innerHTML = nodes
+      .sort((a, b) => new Date(b[4]) - new Date(a[4]))
+      .map(n => {
+        const id = n[0];
+        const name = n[1] || id;
+        const last = n[4];
+        const nodeMsgs = messages
+            .filter(m => m.node_id === id)
+            .slice(-10);
+
+        return `
+<div class="card">
+   <div class="bc">
+    <div class="id">${id}</div>
+    <div class="name">${name} </div>
+    <div class="meta">${formatDate(`${last}`)}</div>
+   </div>
+    <div class="talk">
+        ${nodeMsgs.map(m => `
+            <div class="msg">
+				<span class="meta2">${formatDate(m.ts)}</span> 
+                <span class="type">${formatText(m.text)}</span>
+            </div>
+        `).join("")}
+    </div>
+</div>
+        `;
+    }).join("");
+}
+
+</script>
+
+
+
+</body>
+</html>
