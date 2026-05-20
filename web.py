@@ -12,7 +12,7 @@ socketio = SocketIO(
     async_mode="threading"
 )
 
-db.init()
+#db.init()
 
 from datetime import datetime
 
