@@ -9,7 +9,7 @@
 <div id="db"><button id="btn" value="refresh">refresh</button></div>
    <script>
       async function poll() {
-         const res = await fetch("http://10.0.0.200:5000/data");
+         const res = await fetch("http://127.0.0.1:5000/data");
          const data = await res.json();
          nodes = data.nodes;
          messages = data.messages;
@@ -35,7 +35,7 @@ document.getElementById("btn").onclick = poll;
    }
 
 
-const socket = io("http://10.0.0.200:5000", {
+const socket = io("http://127.0.0.1:5000", {
    transports: ["polling"]
 });
 

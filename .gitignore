@@ -1,4 +1,24 @@
 __pycache__
 .*
 !.gitignore
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 *\.db
+=======
+.*\.db
+mesh2.db
+>>>>>>> Stashed changes
+=======
+.*\.db
+mesh2.db
+>>>>>>> Stashed changes
+=======
+.*\.db
+mesh2.db
+>>>>>>> Stashed changes
+=======
+.*\.db
+mesh2.db
+>>>>>>> Stashed changes

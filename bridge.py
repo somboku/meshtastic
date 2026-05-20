@@ -14,6 +14,7 @@ import sys
 from meshtastic.serial_interface import SerialInterface
 
 sio = socketio.Client()
+serial = "/dev/ttyUSB2"
 
 def _l(w):
 	print(w)
@@ -34,7 +35,7 @@ except Exception as e:
 
 
 
-interface = SerialInterface()
+interface = SerialInterface(serial)
 print("📚 Importing node database...")
 
 
