@@ -14,7 +14,7 @@ import sys
 from meshtastic.serial_interface import SerialInterface
 
 sio = socketio.Client()
-serial = "/dev/ttyUSB2"
+serial = "/dev/ttyACM0"
 
 def _l(w):
 	print(w)

@@ -68,7 +68,7 @@ def on_update(node):
         })
     except Exception as e:
         print("something went wrong here in def on_update web.py")
-  #print(node)
+    print("this is on_update in web.py", node)
 	
 
 @socketio.on("notify")
