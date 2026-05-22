@@ -5,7 +5,7 @@ import re
 import json
 from meshtastic.protobuf import mesh_pb2
 import sys
-
+import DB
 DB = "mesh.db"
 conn = sqlite3.connect(DB)
 

@@ -27,7 +27,7 @@
     }
 
     .card {
-	order:4;
+	order:3;
 	flex-grow:3;
       border: 1px solid #222;
       border-bottom: 1px solid #00ff88;

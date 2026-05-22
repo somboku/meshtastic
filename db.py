@@ -1,70 +1,129 @@
 import sqlite3
+import inspect
 import ast
 import json
+import traceback
+import pprint
+from datetime import datetime
+
 DB = "00F0.db"
 
-def init():
+
+
+
+def dump_caller():
+    frame = inspect.currentframe().f_back
+    print("caller:", frame.f_code.co_name)
+    print("file:", frame.f_code.co_filename)
+    print("line:", frame.f_lineno)
+    print("locals:", frame.f_locals)
+
+def write_to_file(data="",b=""):
+    ts = datetime.now().strftime("%d.%m %H:%M")
+    line = f"{ts} {data}"
+    print(line)
+    with open("./db.py.log", "a", encoding="utf-8") as f:
+        f.write(line)
+    return
+#__________________________________________________________________________
+#=============================================================================================================
+
+
+def insert_packet(packet):
+    node_id = packet.get("fromId") or str(packet.get("from"))
+    to_id = packet.get("toId") or str(packet.get("to"))
+    try:
+        conn = sqlite3.connect(DB)
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO packets (node_id,json,raw) 
+            values (?,?,?)""",
+            (node_id,
+            json.dumps(packet, default=str),
+            pprint.pformat(packet)
+            ))
+        conn.commit()
+        #print("insert whole packet commited")
+    except Exception as e:
+        import traceback
+        print("DB ERROR:",e)
+        traceback.print_exc()
+    finally:
+        if conn:
+            conn.close()
+
+    caller = inspect.stack()[1]
+    f=caller.filename
+    fn = f.split("/")[-1]
+    l=f"insert_packet() from {fn} -> {caller.function}"
+    write_to_file(l)
+
+    return
+#____________________________________________________________________________
+
+
+
+def update_node(node_id):
     conn = sqlite3.connect(DB)
     c = conn.cursor()
 
     c.execute("""
-    CREATE TABLE IF NOT EXISTS nodes (
-        node_id TEXT PRIMARY KEY,
-        name TEXT,
-        hw TEXT,
-        first_seen TEXT,
-        last_seen TEXT
-    )
-    """)
-
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ts TEXT DEFAULT CURRENT_TIMESTAMP,
-        node_id TEXT,
-        type TEXT,
-        text TEXT
-    )
-    """)
-
+    update nodes 
+    set last_seen = datetime('now','localtime')
+    where node_id = ?
+    """,(node_id,))
     conn.commit()
     conn.close()
-def easy(sql):
+
+    caller = inspect.stack()[1]
+    f=caller.filename
+    fn = f.split("/")[-1]
+    l=f"update_node() from {fn} -> {caller.function}"
+    write_to_file(l)
+#__________________________________________________________________________
+
+
+
+def update_full_node(node_id, name, hw, last_seen,last_heard):
+    update_node(node_id)
     conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute(sql)    
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
-def update_full_node(node_id, name, hw, last_seen):
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
-
+    if not last_seen: 
+        last_seen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     c.execute("""
     INSERT INTO nodes (
         node_id,
         name,
         hw,
         first_seen,
-        last_seen
+        last_seen,
+        last_heard
     )
     VALUES (
         ?, ?, ?,
         datetime('now','localtime'),
-        ? 
+        ?, ?
     )
     ON CONFLICT(node_id)
     DO UPDATE SET
         name=excluded.name,
         hw=excluded.hw,
         last_seen=excluded.last_seen
-    """, (node_id, name, hw, last_seen))
-
+    """, (node_id, name, hw, last_seen,last_heard))
+    (f"insert into update:{name} last: seen:{last_seen}")  
     conn.commit()
     conn.close()
+ 
+    caller = inspect.stack()[1]
+    f=caller.filename
+    fn = f.split("/")[-1]
+    l=f"update_full_node() from {fn} -> {caller.function}"
+    write_to_file(l)
+#__________________________________________________________________________
 
-def insert_message(node_id, msg_type, text,pac,deco):
+
+
+def insert_message(node_id, msg_type, text,pac,deco,grml):
     conn = sqlite3.connect(DB)
     c = conn.cursor()
 
@@ -75,21 +134,31 @@ def insert_message(node_id, msg_type, text,pac,deco):
         text,
         ts,
         pac,
-        deco
+        deco,
+        messages_type
     )
     VALUES (?, ?, ?,
         datetime('now','localtime'),
-        ?,?
+        ?,?,?
     )
     """, (node_id, 
             msg_type, 
-            json.dumps(text,default=str),
+            json.dumps(text),
             pac,
-            deco
+            deco,
+            grml
         ))
-
     conn.commit()
     conn.close()
+
+    caller = inspect.stack()[1]
+    f=caller.filename
+    fn = f.split("/")[-1]
+    l=f"insert_message() from {fn} -> {caller.function}"
+    write_to_file(l)
+#__________________________________________________________________________
+
+
 
 def insertNodeInfo(packet,interface):
     conn = sqlite3.connect(DB)
@@ -99,6 +168,13 @@ def insertNodeInfo(packet,interface):
     values (?)
     """, (json.dumps(packet, default=str))
     )
+
+    caller = inspect.stack()[1]
+    f=caller.filename
+    fn = f.split("/")[-1]
+    l=f"insert_NodeInfo() from {fn} -> {caller.function}"
+    write_to_file(l)
+#__________________________________________________________________________
 
 
 
@@ -121,18 +197,15 @@ def get_nodes():
     conn.close()
     return rows
 
-
-def update_node(node_id):
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
-
-    c.execute("""
-    update nodes set (last_seen)
-    values (datetime('now','localtime')) where node_id = ?
-    """,(node_id))
-    conn.commit()
-    conn.close()
+    caller = inspect.stack()[1]
+    f=caller.filename
+    fn = f.split("/")[-1]
+    l=f"get_nodes() from {fn} -> {caller.function}"
+    write_to_file(l)
+#__________________________________________________________________________
  
+
+
 def clean_text(text):
     if not isinstance(text, str):
         return str(text)
@@ -190,6 +263,7 @@ def get_messages(limit=1144,):
     """)
 
     rows = c.fetchall()
+    #print(rows)
     dummy = []
     ctr = {}
     for row in rows:
@@ -207,32 +281,43 @@ def get_messages(limit=1144,):
             "ts": row["ts"],
         })
     conn.close()
+    caller = inspect.stack()[1]
+    f=caller.filename
+    fn = f.split("/")[-1]
+    l=f"get_messages() from {fn} -> {caller.function}"
+    write_to_file(l)
+
     return dummy
-
-
-def insert_packet(packet):
-    node_id = packet.get("fromId") or str(packet.get("from"))
-    to_id = packet.get("toId") or str(packet.get("to"))
-    try:
-        conn = sqlite3.connect("mesh.db")
-        c = conn.cursor()
-        c.execute("""
-            INSERT INTO packets (node_id,json) 
-            values (?,?)""",
-            (node_id,
-            json.dumps(packet, default=str)
-            ))
-        conn.commit()
-        print("insert whole packet commited")       
-    except Exception as e:
-        print("DB ERROR:",e)
-        traceback.print_exc()
-    finally:
-        if conn:
-            conn.close()
-    return
+#__________________________________________________________________________
 
 
 
 
+
+def init():
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS nodes (
+        node_id TEXT PRIMARY KEY,
+        name TEXT,
+        hw TEXT,
+        first_seen TEXT,
+        last_seen TEXT
+    )
+    """)
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ts TEXT DEFAULT CURRENT_TIMESTAMP,
+        node_id TEXT,
+        type TEXT,
+        text TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()
 

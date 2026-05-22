@@ -4,6 +4,7 @@
 from flask import Flask, jsonify
 from flask_socketio import SocketIO
 import db
+from datetime import datetime
 
 app = Flask(__name__)
 socketio = SocketIO(
@@ -12,17 +13,14 @@ socketio = SocketIO(
     async_mode="threading"
 )
 
-#db.init()
 
-from datetime import datetime
 
 def write_to_file(filepath, data):
     ts = datetime.now().strftime("%d.%m %H:%M")
     line = f"{ts} {data}\n"
-
+    print(line)
     with open("./web.py.log", "a", encoding="utf-8") as f:
         f.write(line)
-
 
 
 @app.route("/")
@@ -32,6 +30,7 @@ def index():
 
 @app.route("/data")
 def data():
+    write_to_file("@app.route/data called in web.py")
     return {
         "nodes": db.get_nodes(),
         "messages": db.get_messages()
@@ -68,13 +67,7 @@ def on_update(node):
         })
     except Exception as e:
         print("something went wrong here in def on_update web.py")
-    print("this is on_update in web.py", node)
-	
 
-@socketio.on("notify")
-def on_notify(data):
-	print("🟢 notify!")
-	socketio.emit("notify",data)
 
 if __name__ == "__main__":
     socketio.run(

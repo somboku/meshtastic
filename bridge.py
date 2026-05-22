@@ -15,20 +15,12 @@ from meshtastic.serial_interface import SerialInterface
 
 serial = sys.argv[1] if len(sys.argv) > 1 else None
 if serial is None:
-    print("Usage: bridge.py /dev/ttyUSB1")
+    print("python bridge.py /dev/ttyUSB1")
     sys.exit()
 
 sio = socketio.Client()
 
-def _l(w):
-	print(w)
 #================================================
-def notify(data):
-    try:
-        sio.emit("update",{"alrt": data})
-    except Exception as e:
-        print("⚠️ websocket notify failed:", e)
-
 
 try:
     sio.connect("http://127.0.0.1:5000")
@@ -40,15 +32,17 @@ except Exception as e:
 
 
 interface = SerialInterface(serial)
+print("📡 Connected to Meshtastic radio")
 print("📚 Importing node database...")
 
 
-print("📡 Connected to Meshtastic radio")
 
 
 # import ALL known nodes from meshtastic cache
 def import_nodes():
     print("📚 Importing node database...")
+    print("NO ")
+    return
     nodes = interface.nodesByNum
     #print(nodes)
 
@@ -76,12 +70,13 @@ def import_nodes():
             hw,
             last_seen
         )
-        print(f"🧩 {node_id} -> {long_name} [{hw}]")
+        print(f"🧩 {node_id} last:[{last_seen}] ")
 
 
 
 
 def on_receive(packet, interface):
+    print("=========== NEW =========================================================================")
     db.insert_packet(packet)
     user = {}
     decoded = packet.get("decoded", {})
@@ -126,10 +121,15 @@ def on_receive(packet, interface):
         text = "ADMIN_APP nothing to see"
 
     else:
-        text =  json.dumps(decoded, default=str)
+        #print("this is else for text")
+        if "from" in packet:
+            text = f"{packet.get('from')} says hello to {packet.get('to')} "
+        else:
+            text = "dunno"
 
-
+    
     node_name = node_id
+    last_heard = ""
     known = interface.nodes.get(node_id)
     if not known and isinstance(node_id, str):
         try:
@@ -150,9 +150,9 @@ def on_receive(packet, interface):
             last_heard
             ).strftime("%Y-%m-%d %H:%M:%S")
         else:
-            last_seen = None
+            last_seen = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
     else:
-        last_seen = None    
+        last_seen = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
     if (user):
         hw = user.get("hwModel")
     else:
@@ -162,31 +162,32 @@ def on_receive(packet, interface):
         str(node_id),
         node_name,
         hw,
-        last_seen            
+        last_seen,           
+        last_heard
     )
-
+    
     db.insert_message(
         str(node_id),
         str(msg_type),
         str(text),
         str(packet),
-        str(decoded)
+        str(decoded),
+        type(packet).__name__
     )
-    now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+    now = datetime.now().strftime("%d.%m %H:%M:%S")
 
     print(f"{now}📨 {node_name} [{msg_type}] {text}")
     try:
         sio.emit("update", {
             "nodes":    db.get_nodes(),
             "messages": db.get_messages(),
-            #"alrt": "bridge started...."
+            "alrt": "bridge started...."
         })
 
     except Exception as e:
         print("⚠️ websocket emit failed in bridge.py:", e)
 
 def on_nodeinfo(packet,interface):
-	_l("on_nodeinfo called")
 	db.insertNodeInfo(packet,interface)
 
 
@@ -197,7 +198,6 @@ time.sleep(5)
 import_nodes()
 
 print("🚀 Bridge running (CTRL+C to exit)")
-
 
 while True:
     time.sleep(1)

@@ -9,7 +9,7 @@
 <div id="db"><button id="btn" value="refresh">refresh</button></div>
    <script>
       async function poll() {
-         const res = await fetch("http://127.0.0.1:5000/data");
+         const res = await fetch("http://10.0.0.200:5000/data");
          const data = await res.json();
          nodes = data.nodes;
          messages = data.messages;
@@ -27,7 +27,6 @@ document.getElementById("btn").onclick = poll;
 </div>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
-
    const dbg = (w)=>{
 	  w  = new Date().toJSON().slice(11, 19);
 	  console.log("new dbg message");
@@ -35,7 +34,7 @@ document.getElementById("btn").onclick = poll;
    }
 
 
-const socket = io("http://127.0.0.1:5000", {
+const socket = io("http://10.0.0.200:5000", {
    transports: ["polling"]
 });
 
@@ -55,6 +54,9 @@ const socket = io("http://127.0.0.1:5000", {
 
 
 function formatDate(ts) {
+    if (typeof ts === "string" && ts.includes(".")) {
+        return ts;
+    }
     const d = new Date(ts);
 
     const year = d.getFullYear();
@@ -97,6 +99,7 @@ function render() {
     <div class="id">${id}</div>
     <div class="name">${name} </div>
     <div class="meta">${formatDate(`${last}`)}</div>
+   <!-- <div >#${last}#</div> -->
    </div>
     <div class="talk">
         ${nodeMsgs.map(m => `
