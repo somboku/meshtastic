@@ -4,23 +4,23 @@ CREATE TABLE nodes (
         hw TEXT,
         first_seen TEXT,
         last_seen TEXT
-    );
-CREATE TABLE sqlite_sequence(name,seq);
+    , last_heard text);
 CREATE TABLE node_info (
 	id INTEGER primary key autoincrement,
 	ts text default current_timestamp,
 	full_raw text
 );
+CREATE TABLE sqlite_sequence(name,seq);
 CREATE TABLE IF NOT EXISTS "packets" (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ts TEXT DEFAULT (datetime('now','localtime')),
     node_id TEXT,
     json TEXT
-);
+, raw text);
 CREATE TABLE IF NOT EXISTS "messages" (
              id INTEGER PRIMARY KEY AUTOINCREMENT,
              ts TEXT DEFAULT (datetime('now','localtime')),
              node_id TEXT,
              type text,
              text text
-             , pac text, deco text);
+             , pac text, deco text, messages_type text);

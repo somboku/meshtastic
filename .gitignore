@@ -1,7 +1,14 @@
 __pycache__
 .*
 !.gitignore
+<<<<<<< HEAD
 mesh.db
 db.py.log
 mesh.db.bak
 00F0.db
+=======
+db.py.log
+mesh.db
+00F0.db
+mesh.db.bak
+>>>>>>> 2094d93183323f3603007353ab68fbcdf398516c
