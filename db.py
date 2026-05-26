@@ -17,11 +17,13 @@ def dump_caller():
     print("file:", frame.f_code.co_filename)
     print("line:", frame.f_lineno)
     print("locals:", frame.f_locals)
+#___________________________________________________________
+
 
 def write_to_file(data="",b=""):
     ts = datetime.now().strftime("%d.%m %H:%M")
     line = f"{ts} {data}"
-    print(line)
+    #print(line)
     with open("./db.py.log", "a", encoding="utf-8") as f:
         f.write(line)
     return
@@ -110,7 +112,7 @@ def update_full_node(node_id, name, hw, last_seen,last_heard):
         hw=excluded.hw,
         last_seen=excluded.last_seen
     """, (node_id, name, hw, last_seen,last_heard))
-    (f"insert into update:{name} last: seen:{last_seen}")  
+    #print(f"insert into update:{name} last: seen:{last_seen}")  
     conn.commit()
     conn.close()
  

@@ -77,6 +77,7 @@ def import_nodes():
 
 def on_receive(packet, interface):
     print("=========== NEW =========================================================================")
+    print(packet)
     db.insert_packet(packet)
     user = {}
     decoded = packet.get("decoded", {})

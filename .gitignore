@@ -1,6 +1,7 @@
 __pycache__
 .*
 !.gitignore
+db.py.log
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
