@@ -41,11 +41,9 @@ print("📚 Importing node database...")
 # import ALL known nodes from meshtastic cache
 def import_nodes():
     print("📚 Importing node database...")
-    print("NO ")
-    return
     nodes = interface.nodesByNum
-    #print(nodes)
 
+    last_heard = ""
     user = {}
     print(f"🔍 found {len(nodes)} nodes")
     for node_id, node in nodes.items():
@@ -68,7 +66,8 @@ def import_nodes():
             str(node_id),
             long_name,
             hw,
-            last_seen
+            last_seen,
+            last_heard
         )
         print(f"🧩 {node_id} last:[{last_seen}] ")
 

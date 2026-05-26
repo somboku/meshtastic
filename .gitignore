@@ -2,24 +2,6 @@ __pycache__
 .*
 !.gitignore
 db.py.log
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-*\.db
-=======
-.*\.db
-mesh2.db
->>>>>>> Stashed changes
-=======
-.*\.db
-mesh2.db
->>>>>>> Stashed changes
-=======
-.*\.db
-mesh2.db
->>>>>>> Stashed changes
-=======
-.*\.db
-mesh2.db
->>>>>>> Stashed changes
+mesh.db
+00F0.db
+mesh.db.bak
