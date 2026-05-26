@@ -18,20 +18,12 @@ def dump_caller():
     print("line:", frame.f_lineno)
     print("locals:", frame.f_locals)
 #___________________________________________________________
-<<<<<<< HEAD
-=======
-
->>>>>>> 2094d93183323f3603007353ab68fbcdf398516c
 
 def write_to_file(data="",b=""):
     ts = datetime.now().strftime("%d.%m %H:%M")
     line = f"{ts} {data}"
-<<<<<<< HEAD
 #    print(line)
     return
-=======
-    #print(line)
->>>>>>> 2094d93183323f3603007353ab68fbcdf398516c
     with open("./db.py.log", "a", encoding="utf-8") as f:
         f.write(line)
     return
@@ -120,11 +112,9 @@ def update_full_node(node_id, name, hw, last_seen,last_heard):
         hw=excluded.hw,
         last_seen=excluded.last_seen
     """, (node_id, name, hw, last_seen,last_heard))
-<<<<<<< HEAD
-    print(f"insert into update:{name} last: seen:{last_seen}")  
-=======
-    #print(f"insert into update:{name} last: seen:{last_seen}")  
->>>>>>> 2094d93183323f3603007353ab68fbcdf398516c
+
+    #print(f"insert into update:{name} lastseen:{last_seen}")  
+
     conn.commit()
     conn.close()
  
