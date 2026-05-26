@@ -6,7 +6,7 @@ import traceback
 import pprint
 from datetime import datetime
 
-DB = "00F0.db"
+DB = "mesh.db"
 
 
 

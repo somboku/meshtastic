@@ -42,7 +42,7 @@ print("📚 Importing node database...")
 def import_nodes():
     print("📚 Importing node database...")
     print("NO ")
-    return
+#    return
     nodes = interface.nodesByNum
     #print(nodes)
 
@@ -77,6 +77,7 @@ def import_nodes():
 
 def on_receive(packet, interface):
     print("=========== NEW =========================================================================")
+    print(packet)
     db.insert_packet(packet)
     user = {}
     decoded = packet.get("decoded", {})

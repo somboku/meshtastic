@@ -1,6 +1,9 @@
 __pycache__
 .*
 !.gitignore
+mesh.db
+db.py.log
+mesh.db.bak
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
