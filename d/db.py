@@ -6,7 +6,7 @@ import traceback
 import pprint
 from datetime import datetime
 
-DB = "mesh.db"
+DB = "00F0.db"
 
 
 
@@ -19,11 +19,11 @@ def dump_caller():
     print("locals:", frame.f_locals)
 #___________________________________________________________
 
+
 def write_to_file(data="",b=""):
     ts = datetime.now().strftime("%d.%m %H:%M")
     line = f"{ts} {data}"
-#    print(line)
-    return
+    print(line)
     with open("./db.py.log", "a", encoding="utf-8") as f:
         f.write(line)
     return

@@ -4,24 +4,4 @@ __pycache__
 mesh.db
 db.py.log
 mesh.db.bak
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-*\.db
-=======
-.*\.db
-mesh2.db
->>>>>>> Stashed changes
-=======
-.*\.db
-mesh2.db
->>>>>>> Stashed changes
-=======
-.*\.db
-mesh2.db
->>>>>>> Stashed changes
-=======
-.*\.db
-mesh2.db
->>>>>>> Stashed changes
+00F0.db
