@@ -191,7 +191,6 @@ def on_nodeinfo(packet,interface):
 	db.insertNodeInfo(packet,interface)
 
 
-
 pub.subscribe(on_receive, "meshtastic.receive")
 pub.subscribe(on_nodeinfo, "meshtastic.nodeinfo")
 time.sleep(5)

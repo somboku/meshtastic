@@ -15,7 +15,7 @@ socketio = SocketIO(
 
 
 
-def write_to_file(filepath, data):
+def write_to_file(data):
     ts = datetime.now().strftime("%d.%m %H:%M")
     line = f"{ts} {data}\n"
     print(line)

@@ -75,8 +75,9 @@ function formatText(txt){
    if (regex.test(txt)){
       //console.log(">>>>>>> ",txt);
       nT = txt.replace(/[\"\{\}]/g,"");
+      return nT;
    }
-   return nT;
+   return txt;
 }
 
 function render() {
